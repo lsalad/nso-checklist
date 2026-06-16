@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NSO 3P Platform Checklist — Just Salad</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f6f6f4; --bg3: #f0efec;
+    --text: #1a1a18; --text2: #6b6b67; --text3: #9b9b97;
+    --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.22);
+    --green: #1D9E75; --green-dark: #0F6E56; --green-light: #EAF3DE; --green-text: #3B6D11;
+    --amber-light: #FAEEDA; --amber-text: #854F0B;
+    --red-light: #FCEBEB; --red-mid: #F09595; --red-text: #A32D2D;
+    --radius: 8px; --radius-lg: 12px;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a; --bg2: #252523; --bg3: #2e2e2b;
+      --text: #f0ede8; --text2: #a0a09a; --text3: #6b6b65;
+      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
+      --green-light: #04342C; --green-text: #9FE1CB;
+      --amber-light: #412402; --amber-text: #FAC775;
+      --red-light: #501313; --red-mid: #791F1F; --red-text: #F09595;
+    }
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; padding: 1.5rem 1rem 3rem; }
+  .container { max-width: 720px; margin: 0 auto; }
+  .page-header { margin-bottom: 1.5rem; }
+  .page-header h1 { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .page-header p { font-size: 13px; color: var(--text2); }
+  .store-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1rem; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; }
+  .field input { font-size: 14px; padding: 7px 10px; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg); color: var(--text); outline: none; }
+  .field input:focus { border-color: var(--green); box-shadow: 0 0 0 2px rgba(29,158,117,0.15); }
+  .progress-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .progress-bar-outer { flex: 1; min-width: 180px; }
+  .progress-bar-track { height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+  .progress-bar-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width 0.3s ease; }
+  .progress-text { font-size: 12px; color: var(--text2); display: flex; justify-content: space-between; }
+  .status-badge { font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+  .s-notstarted { background: var(--bg2); color: var(--text2); }
+  .s-inprogress { background: var(--amber-light); color: var(--amber-text); }
+  .s-complete { background: var(--green-light); color: var(--green-text); }
+  .s-blocked { background: var(--red-light); color: var(--red-text); }
+  .platform-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 10px; overflow: hidden; }
+  .platform-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; user-select: none; }
+  .platform-header:hover { background: var(--bg2); }
+  .ring-wrap { position: relative; width: 38px; height: 38px; flex-shrink: 0; }
+  .ring-wrap svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
+  .ring-abbr { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 9px; font-weight: 600; color: var(--text2); letter-spacing: 0.03em; pointer-events: none; }
+  .platform-name { font-size: 14px; font-weight: 500; flex: 1; }
+  .platform-count { font-size: 12px; color: var(--text2); margin-right: 4px; }
+  .chevron { font-size: 16px; color: var(--text3); transition: transform 0.2s; }
+  .chevron.open { transform: rotate(180deg); }
+  .task-list { border-top: 1px solid var(--border); }
+  .task-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 16px 9px 52px; border-bottom: 1px solid var(--border); }
+  .task-row:last-child { border-bottom: none; }
+  .task-row.done .task-text { color: var(--text3); text-decoration: line-through; }
+  .task-check { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; cursor: pointer; accent-color: var(--green); }
+  .task-text { font-size: 13px; flex: 1; line-height: 1.5; color: var(--text); }
+  .flag-btn { font-size: 11px; padding: 3px 8px; border-radius: var(--radius); border: 1px solid var(--border2); background: transparent; color: var(--text2); cursor: pointer; flex-shrink: 0; margin-top: 1px; }
+  .flag-btn:hover { background: var(--bg2); }
+  .flag-btn.flagged { background: var(--red-light); border-color: var(--red-mid); color: var(--red-text); }
+  .blocker-note-wrap { padding: 0 16px 10px 52px; }
+  .blocker-note { width: 100%; font-size: 12px; padding: 6px 8px; border: 1px solid var(--red-mid); border-radius: var(--radius); background: var(--red-light); color: var(--red-text); resize: none; font-family: inherit; }
+  .blocker-note::placeholder { color: var(--red-text); opacity: 0.6; }
+  .blockers-panel { background: var(--red-light); border: 1px solid var(--red-mid); border-radius: var(--radius-lg); padding: 12px 16px; margin-top: 1rem; }
+  .blockers-panel h3 { font-size: 13px; font-weight: 600; color: var(--red-text); margin-bottom: 8px; }
+  .blocker-item { font-size: 12px; color: var(--red-text); padding: 4px 0; border-bottom: 1px solid var(--red-mid); }
+  .blocker-item:last-child { border-bottom: none; }
+  .action-row { display: flex; gap: 8px; margin-top: 1.25rem; flex-wrap: wrap; }
+  .btn { font-size: 13px; padding: 8px 14px; border-radius: var(--radius); border: 1px solid var(--border2); background: var(--bg); color: var(--text); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .btn:hover { background: var(--bg2); }
+  .btn-green { background: var(--green); border-color: var(--green); color: #fff; }
+  .btn-green:hover { background: var(--green-dark); border-color: var(--green-dark); }
+  .btn-muted { color: var(--text2); }
+  .section-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin: 1.5rem 0 0.5rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="page-header">
+    <h1>NSO 3P platform checklist</h1>
+    <p>Verify all third-party delivery platforms are live before store opening.</p>
+  </div>
+
+  <div class="store-row">
+    <div class="field">
+      <label for="storeName">Store</label>
+      <input type="text" id="storeName" placeholder="e.g. #142 — Coral Gables" style="width:220px" />
+    </div>
+    <div class="field">
+      <label for="openDate">Target opening date</label>
+      <input type="date" id="openDate" />
+    </div>
+    <div class="field">
+      <label for="assignedTo">Assigned to</label>
+      <input type="text" id="assignedTo" placeholder="Your name" style="width:160px" />
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar-outer">
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-text"><span id="progressText">0 of 0 tasks complete</span><span id="progressPct">0%</span></div>
+    </div>
+    <span class="status-badge s-notstarted" id="statusBadge">Not started</span>
+  </div>
+
+  <div id="platformList"></div>
+  <div class="blockers-panel" id="blockersPanel" style="display:none">
+    <h3><i class="ti ti-alert-triangle"></i> Open blockers</h3>
+    <div id="blockersList"></div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn btn-green" onclick="exportChecklist()"><i class="ti ti-download"></i> Export summary</button>
+    <button class="btn btn-muted" onclick="printPage()"><i class="ti ti-printer"></i> Print</button>
+    <button class="btn btn-muted" onclick="resetAll()"><i class="ti ti-refresh"></i> Reset</button>
+  </div>
+</div>
+
+<script>
+const PLATFORMS = [
+  { id:'gh', name:'Grubhub', abbr:'GH', tasks:[
+    'Menu uploaded and prices verified',
+    'Store hours set correctly (incl. holidays)',
+    'Tablet activated and logged in',
+    'Printer connected and test receipt printed',
+    'Test order placed and received in kitchen',
+    'Store address and pickup instructions confirmed',
+    'Photos and store description updated',
+    'GH rep notified of opening date',
+  ]},
+  { id:'dd', name:'DoorDash', abbr:'DD', tasks:[
+    'Menu uploaded and prices verified',
+    'Store hours set correctly',
+    'Tablet activated and logged in',
+    'Printer connected and test receipt printed',
+    'Test order placed and received in kitchen',
+    'Store address and Dasher pickup instructions confirmed',
+    'Photos and store description updated',
+    'DD rep notified of opening date',
+    'DashPass eligibility confirmed',
+  ]},
+  { id:'ue', name:'Uber Eats', abbr:'UE', tasks:[
+    'Menu uploaded and prices verified',
+    'Store hours set correctly',
+    'Tablet activated and logged in',
+    'Printer connected and test receipt printed',
+    'Test order placed and received in kitchen',
+    'Store address and courier pickup instructions confirmed',
+    'Photos and store description updated',
+    'UE rep notified of opening date',
+    'Uber One eligibility confirmed',
+  ]},
+  { id:'otter', name:'Otter', abbr:'OTT', tasks:[
+    'Otter tablet/device activated',
+    'All platforms connected to Otter aggregator',
+    'Menu sync verified across all connected platforms',
+    'Order routing tested (GH → Otter → KDS)',
+    'Order routing tested (DD → Otter → KDS)',
+    'Order routing tested (UE → Otter → KDS)',
+    '86 item / pause store feature tested',
+    'Store manager trained on Otter interface',
+  ]},
+  { id:'nash', name:'Nash', abbr:'NSH', tasks:[
+    'Nash delivery integration activated for location',
+    'Dispatch settings configured (radius, timing)',
+    'Test dispatch completed successfully',
+    'Nash contact confirmed for go-live support',
+  ]},
+  { id:'mealpal', name:'MealPal', abbr:'MP', tasks:[
+    'Store listed and visible on MealPal',
+    'Menu items and pricing confirmed',
+    'Redemption process tested with store team',
+    'MealPal pickup instructions posted at store',
+    'MealPal rep notified of opening date',
+  ]},
+  { id:'relay', name:'Relay', abbr:'RLY', tasks:[
+    'Relay courier zone confirmed for this location',
+    'Integration or handoff process confirmed with ops',
+    'Test order dispatched via Relay',
+    'Relay contact confirmed for go-live',
+  ]},
+  { id:'ezcater', name:'Catering / EZCater', abbr:'EZC', tasks:[
+    'Location listed on EZCater',
+    'Catering menu uploaded and verified',
+    'Minimum order and lead time set',
+    'Catering contact at store assigned',
+    'Test catering order placed and confirmed',
+  ]},
+];
+
+let state={}, notes={}, blockers={}, expanded={};
+
+function init(){
+  PLATFORMS.forEach(p=>{
+    state[p.id]={};notes[p.id]={};blockers[p.id]={};expanded[p.id]=false;
+    p.tasks.forEach((_,i)=>{state[p.id][i]=false;blockers[p.id][i]=false;notes[p.id][i]='';});
+  });
+  render();
+}
+
+function getPlatformProgress(p){
+  const total=p.tasks.length;
+  const done=p.tasks.filter((_,i)=>state[p.id][i]).length;
+  return{done,total,pct:total?Math.round(done/total*100):0};
+}
+
+function getTotalProgress(){
+  let done=0,total=0;
+  PLATFORMS.forEach(p=>{const pr=getPlatformProgress(p);done+=pr.done;total+=pr.total;});
+  return{done,total,pct:total?Math.round(done/total*100):0};
+}
+
+function getOverallStatus(){
+  const hasBlocker=PLATFORMS.some(p=>p.tasks.some((_,i)=>blockers[p.id][i]));
+  if(hasBlocker)return'blocked';
+  const{done,total}=getTotalProgress();
+  if(done===0)return'notstarted';
+  if(done===total)return'complete';
+  return'inprogress';
+}
+
+function statusLabel(s){
+  return{notstarted:'Not started',inprogress:'In progress',complete:'Ready to launch',blocked:'Has blockers'}[s]||s;
+}
+
+function renderRing(done,total,abbr){
+  const r=15,c=2*Math.PI*r,fill=(total?done/total:0)*c;
+  const stroke=done===total&&total>0?'#1D9E75':'#1D9E75';
+  return`<div class="ring-wrap">
+    <svg width="38" height="38" viewBox="0 0 38 38" aria-hidden="true">
+      <circle cx="19" cy="19" r="${r}" fill="none" stroke="#D3D1C7" stroke-width="3" opacity="0.35"/>
+      <circle cx="19" cy="19" r="${r}" fill="none" stroke="${stroke}" stroke-width="3"
+        stroke-dasharray="${fill.toFixed(2)} ${c.toFixed(2)}" stroke-linecap="round"/>
+    </svg>
+    <span class="ring-abbr">${abbr}</span>
+  </div>`;
+}
+
+function toggleTask(pid,idx){state[pid][idx]=!state[pid][idx];render();}
+function toggleBlocker(pid,idx){blockers[pid][idx]=!blockers[pid][idx];render();}
+function toggleExpand(pid){expanded[pid]=!expanded[pid];renderPlatform(pid);}
+
+function renderPlatform(pid){
+  const p=PLATFORMS.find(x=>x.id===pid);
+  const pr=getPlatformProgress(p);
+  const isExp=expanded[pid];
+  const hasBlocker=p.tasks.some((_,i)=>blockers[p.id][i]);
+  const el=document.getElementById('pc-'+pid);
+  if(!el)return;
+  let taskHtml='';
+  if(isExp){
+    taskHtml='<div class="task-list">';
+    p.tasks.forEach((t,i)=>{
+      const checked=state[pid][i],isB=blockers[pid][i];
+      taskHtml+=`<div class="task-row${checked?' done':''}">
+        <input type="checkbox" class="task-check" ${checked?'checked':''} onchange="toggleTask('${pid}',${i})" aria-label="${t.replace(/'/g,'&#39;')}" />
+        <span class="task-text">${t}</span>
+        <button class="flag-btn${isB?' flagged':''}" onclick="toggleBlocker('${pid}',${i})">${isB?'⚠ blocked':'flag'}</button>
+      </div>`;
+      if(isB){
+        const n=(notes[pid][i]||'').replace(/"/g,'&quot;');
+        taskHtml+=`<div class="blocker-note-wrap"><textarea class="blocker-note" rows="2" placeholder="Describe the blocker…" onchange="notes['${pid}'][${i}]=this.value">${n}</textarea></div>`;
+      }
+    });
+    taskHtml+='</div>';
+  }
+  el.innerHTML=`
+    <div class="platform-header" onclick="toggleExpand('${pid}')" role="button" aria-expanded="${isExp}" tabindex="0">
+      ${renderRing(pr.done,pr.total,p.abbr)}
+      <span class="platform-name">${p.name}${hasBlocker?' <span style="color:var(--red-text);font-size:11px;margin-left:4px">⚠</span>':''}</span>
+      <span class="platform-count">${pr.done}/${pr.total}</span>
+      <i class="ti ti-chevron-down chevron${isExp?' open':''}"></i>
+    </div>${taskHtml}`;
+  el.querySelector('.platform-header').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleExpand(pid);}};
+}
+
+function render(){
+  const container=document.getElementById('platformList');
+  PLATFORMS.forEach(p=>{
+    let el=document.getElementById('pc-'+p.id);
+    if(!el){el=document.createElement('div');el.className='platform-card';el.id='pc-'+p.id;container.appendChild(el);}
+    renderPlatform(p.id);
+  });
+  const{done,total,pct}=getTotalProgress();
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressText').textContent=`${done} of ${total} tasks complete`;
+  document.getElementById('progressPct').textContent=pct+'%';
+  const status=getOverallStatus();
+  const badge=document.getElementById('statusBadge');
+  badge.className='status-badge s-'+status;
+  badge.textContent=statusLabel(status);
+  renderBlockers();
+}
+
+function renderBlockers(){
+  const items=[];
+  PLATFORMS.forEach(p=>{p.tasks.forEach((t,i)=>{if(blockers[p.id][i])items.push({platform:p.name,task:t,note:notes[p.id][i]});});});
+  const panel=document.getElementById('blockersPanel');
+  if(!items.length){panel.style.display='none';return;}
+  panel.style.display='block';
+  document.getElementById('blockersList').innerHTML=items.map(b=>`<div class="blocker-item"><strong>${b.platform}:</strong> ${b.task}${b.note?' — <em>'+b.note+'</em>':''}</div>`).join('');
+}
+
+function resetAll(){
+  if(!confirm('Reset all checklist items? This cannot be undone.'))return;
+  PLATFORMS.forEach(p=>{p.tasks.forEach((_,i)=>{state[p.id][i]=false;blockers[p.id][i]=false;notes[p.id][i]='';});expanded[p.id]=false;});
+  render();
+}
+
+function exportChecklist(){
+  const store=document.getElementById('storeName').value||'New store';
+  const date=document.getElementById('openDate').value||'TBD';
+  const who=document.getElementById('assignedTo').value||'—';
+  const{done,total,pct}=getTotalProgress();
+  let lines=[`NSO 3P Platform Checklist — ${store}`,`Opening date: ${date}`,`Assigned to: ${who}`,`Progress: ${done}/${total} (${pct}%)`,`Status: ${statusLabel(getOverallStatus())}`,`Exported: ${new Date().toLocaleString()}`,``,`--- Platform Summary ---`];
+  PLATFORMS.forEach(p=>{
+    const pr=getPlatformProgress(p);
+    const hasB=p.tasks.some((_,i)=>blockers[p.id][i]);
+    lines.push(`\n${p.name}: ${pr.done}/${pr.total}${hasB?' ⚠ HAS BLOCKERS':''}`);
+    p.tasks.forEach((t,i)=>{
+      lines.push(`  [${state[p.id][i]?'x':' '}] ${t}${blockers[p.id][i]?' ⚠ BLOCKED':''}${notes[p.id][i]?' ('+notes[p.id][i]+')':''}`);
+    });
+  });
+  const allB=[];
+  PLATFORMS.forEach(p=>{p.tasks.forEach((t,i)=>{if(blockers[p.id][i])allB.push(`${p.name}: ${t}${notes[p.id][i]?' — '+notes[p.id][i]:''}`)});});
+  if(allB.length){lines.push(`\n--- Open Blockers ---`);allB.forEach(b=>lines.push(b));}
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/plain'}));
+  a.download=`NSO-checklist-${store.replace(/[^a-z0-9]/gi,'-')}.txt`;
+  a.click();
+}
+
+function printPage(){window.print();}
+
+init();
+</script>
+</body>
+</html>
